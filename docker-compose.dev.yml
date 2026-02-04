@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  log-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: minisource-log-dev
+    ports:
+      - "5002:5002"
+    environment:
+      - SERVER_PORT=5002
+      - POSTGRES_HOST=log-db
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=log_user
+      - POSTGRES_PASSWORD=log_dev_password
+      - POSTGRES_DB=log_db
+      - POSTGRES_SSL_MODE=disable
+      - POSTGRES_LOG_LEVEL=debug
+      - REDIS_HOST=log-redis
+      - REDIS_PORT=6379
+      - LOG_RETENTION_DAYS=7
+      - LOG_MAX_SIZE_GB=5
+    depends_on:
+      log-db:
+        condition: service_healthy
+      log-redis:
+        condition: service_started
+    networks:
+      - log-network
+    volumes:
+      - .:/app:ro
+    restart: unless-stopped
+
+  log-db:
+    image: postgres:16-alpine
+    container_name: minisource-log-db-dev
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=log_user
+      - POSTGRES_PASSWORD=log_dev_password
+      - POSTGRES_DB=log_db
+    volumes:
+      - log-db-dev-data:/var/lib/postgresql/data
+      - ./migrations/000001_initial_schema.up.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    networks:
+      - log-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U log_user -d log_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  log-redis:
+    image: redis:7-alpine
+    container_name: minisource-log-redis-dev
+    ports:
+      - "6380:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - log-redis-dev-data:/data
+    networks:
+      - log-network
+
+  # pgAdmin for database management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: minisource-log-pgadmin
+    ports:
+      - "5051:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@minisource.local
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    networks:
+      - log-network
+    depends_on:
+      - log-db
+
+volumes:
+  log-db-dev-data:
+  log-redis-dev-data:
+
+networks:
+  log-network:
+    driver: bridge

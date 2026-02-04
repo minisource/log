@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  log-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: minisource-log
+    ports:
+      - "5002:5002"
+    environment:
+      - SERVER_PORT=5002
+      - POSTGRES_HOST=log-db
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=log_user
+      - POSTGRES_PASSWORD=${LOG_DB_PASSWORD:-log_secret}
+      - POSTGRES_DB=log_db
+      - POSTGRES_SSL_MODE=disable
+      - REDIS_HOST=log-redis
+      - REDIS_PORT=6379
+      - LOG_RETENTION_DAYS=30
+      - LOG_MAX_SIZE_GB=50
+    depends_on:
+      log-db:
+        condition: service_healthy
+      log-redis:
+        condition: service_started
+    networks:
+      - minisource-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5002/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  log-db:
+    image: postgres:16-alpine
+    container_name: minisource-log-db
+    environment:
+      - POSTGRES_USER=log_user
+      - POSTGRES_PASSWORD=${LOG_DB_PASSWORD:-log_secret}
+      - POSTGRES_DB=log_db
+    volumes:
+      - log-db-data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d:ro
+    networks:
+      - minisource-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U log_user -d log_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  log-redis:
+    image: redis:7-alpine
+    container_name: minisource-log-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - log-redis-data:/data
+    networks:
+      - minisource-network
+    restart: unless-stopped
+
+volumes:
+  log-db-data:
+  log-redis-data:
+
+networks:
+  minisource-network:
+    external: true

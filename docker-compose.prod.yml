@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  log-service:
+    image: minisource/log:${VERSION:-latest}
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    ports:
+      - "5002:5002"
+    environment:
+      - SERVER_PORT=5002
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB:-log_db}
+      - POSTGRES_SSL_MODE=${POSTGRES_SSL_MODE:-require}
+      - POSTGRES_MAX_OPEN_CONNS=${POSTGRES_MAX_OPEN_CONNS:-25}
+      - POSTGRES_MAX_IDLE_CONNS=${POSTGRES_MAX_IDLE_CONNS:-10}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - TRACING_ENDPOINT=${TRACING_ENDPOINT}
+      - TRACING_SAMPLE_RATE=${TRACING_SAMPLE_RATE:-0.1}
+      - LOG_RETENTION_DAYS=${LOG_RETENTION_DAYS:-30}
+      - LOG_MAX_SIZE_GB=${LOG_MAX_SIZE_GB:-100}
+    networks:
+      - minisource-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5002/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+networks:
+  minisource-network:
+    external: true
