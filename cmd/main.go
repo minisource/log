@@ -13,7 +13,9 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/gofiber/swagger"
 	"github.com/minisource/log/config"
+	_ "github.com/minisource/log/docs" // Swagger docs
 	"github.com/minisource/log/internal/database"
 	"github.com/minisource/log/internal/handler"
 	"github.com/minisource/log/internal/middleware"
@@ -23,6 +25,15 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+// @title Log Service API
+// @version 1.0
+// @description Centralized logging service for Minisource
+// @host localhost:5002
+// @BasePath /api/v1
+// @schemes http https
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
 	// Load configuration
 	cfg, err := config.Load()
@@ -50,7 +61,7 @@ func main() {
 	var redisClient *redis.Client
 	if cfg.Redis.Host != "" {
 		redisClient = redis.NewClient(&redis.Options{
-			Addr:     fmt.Sprintf("%s:%d", cfg.Redis.Host, cfg.Redis.Port),
+			Addr:     fmt.Sprintf("%s:%s", cfg.Redis.Host, cfg.Redis.Port),
 			Password: cfg.Redis.Password,
 			DB:       cfg.Redis.DB,
 		})
@@ -102,6 +113,9 @@ func main() {
 	app.Use(middleware.SecurityHeaders())
 	app.Use(middleware.ContentType())
 
+	// Swagger route
+	app.Get("/swagger/*", swagger.HandlerDefault)
+
 	// Setup routes
 	router.SetupRoutes(app, logHandler, retentionHandler, alertHandler, healthHandler)
 
@@ -110,7 +124,7 @@ func main() {
 
 	// Start server
 	go func() {
-		addr := fmt.Sprintf(":%d", cfg.Server.Port)
+		addr := fmt.Sprintf(":%s", cfg.Server.Port)
 		log.Printf("Starting Log Service on %s", addr)
 		if err := app.Listen(addr); err != nil {
 			log.Fatalf("Failed to start server: %v", err)

@@ -294,13 +294,13 @@ func (r *LogRepository) GetServices(ctx context.Context, tenantID *uuid.UUID) ([
 func (r *LogRepository) GetStorageSize(ctx context.Context, tenantID *uuid.UUID) (int64, error) {
 	var size int64
 	query := `SELECT pg_total_relation_size('log_entries')`
-	
+
 	if tenantID != nil {
 		// Estimate based on row count ratio
 		var total, tenantTotal int64
 		r.db.Model(&models.LogEntry{}).Count(&total)
 		r.db.Model(&models.LogEntry{}).Where("tenant_id = ?", tenantID).Count(&tenantTotal)
-		
+
 		if total > 0 {
 			r.db.Raw(query).Scan(&size)
 			size = size * tenantTotal / total

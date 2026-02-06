@@ -11,11 +11,11 @@ import (
 type LogLevel string
 
 const (
-	LogLevelDebug   LogLevel = "DEBUG"
-	LogLevelInfo    LogLevel = "INFO"
-	LogLevelWarn    LogLevel = "WARN"
-	LogLevelError   LogLevel = "ERROR"
-	LogLevelFatal   LogLevel = "FATAL"
+	LogLevelDebug LogLevel = "DEBUG"
+	LogLevelInfo  LogLevel = "INFO"
+	LogLevelWarn  LogLevel = "WARN"
+	LogLevelError LogLevel = "ERROR"
+	LogLevelFatal LogLevel = "FATAL"
 )
 
 // LogEntry represents a single log entry
@@ -66,10 +66,10 @@ type LogFilter struct {
 
 // LogStats represents aggregated log statistics
 type LogStats struct {
-	TotalCount   int64            `json:"total_count"`
-	LevelCounts  map[LogLevel]int64 `json:"level_counts"`
-	ServiceCounts map[string]int64 `json:"service_counts"`
-	TimeRange    TimeRange        `json:"time_range"`
+	TotalCount    int64              `json:"total_count"`
+	LevelCounts   map[LogLevel]int64 `json:"level_counts"`
+	ServiceCounts map[string]int64   `json:"service_counts"`
+	TimeRange     TimeRange          `json:"time_range"`
 }
 
 // TimeRange represents a time range
@@ -80,8 +80,8 @@ type TimeRange struct {
 
 // LogAggregation represents aggregated log data
 type LogAggregation struct {
-	Bucket      time.Time         `json:"bucket"`
-	Count       int64             `json:"count"`
+	Bucket      time.Time          `json:"bucket"`
+	Count       int64              `json:"count"`
 	LevelCounts map[LogLevel]int64 `json:"level_counts,omitempty"`
 }
 
@@ -104,19 +104,19 @@ func (LogRetention) TableName() string {
 
 // LogAlert defines alerting rules for logs
 type LogAlert struct {
-	ID          uuid.UUID       `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
-	TenantID    uuid.UUID       `json:"tenant_id" gorm:"type:uuid;index"`
-	Name        string          `json:"name" gorm:"type:varchar(255);not null"`
-	Description string          `json:"description,omitempty" gorm:"type:text"`
-	Enabled     bool            `json:"enabled" gorm:"default:true"`
-	Filter      json.RawMessage `json:"filter" gorm:"type:jsonb;not null"`
-	Threshold   int             `json:"threshold" gorm:"not null"`
-	WindowMins  int             `json:"window_mins" gorm:"not null;default:5"`
-	Severity    string          `json:"severity" gorm:"type:varchar(20);not null"`
-	Channels    json.RawMessage `json:"channels" gorm:"type:jsonb"`
-	LastTriggered *time.Time    `json:"last_triggered,omitempty"`
-	CreatedAt   time.Time       `json:"created_at" gorm:"autoCreateTime"`
-	UpdatedAt   time.Time       `json:"updated_at" gorm:"autoUpdateTime"`
+	ID            uuid.UUID       `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
+	TenantID      uuid.UUID       `json:"tenant_id" gorm:"type:uuid;index"`
+	Name          string          `json:"name" gorm:"type:varchar(255);not null"`
+	Description   string          `json:"description,omitempty" gorm:"type:text"`
+	Enabled       bool            `json:"enabled" gorm:"default:true"`
+	Filter        json.RawMessage `json:"filter" gorm:"type:jsonb;not null"`
+	Threshold     int             `json:"threshold" gorm:"not null"`
+	WindowMins    int             `json:"window_mins" gorm:"not null;default:5"`
+	Severity      string          `json:"severity" gorm:"type:varchar(20);not null"`
+	Channels      json.RawMessage `json:"channels" gorm:"type:jsonb"`
+	LastTriggered *time.Time      `json:"last_triggered,omitempty"`
+	CreatedAt     time.Time       `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt     time.Time       `json:"updated_at" gorm:"autoUpdateTime"`
 }
 
 // TableName returns the table name for GORM

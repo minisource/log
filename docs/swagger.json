@@ -1,0 +1,1201 @@
+{
+    "schemes": [
+        "http",
+        "https"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "Centralized logging service for Minisource",
+        "title": "Log Service API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:5002",
+    "basePath": "/api/v1",
+    "paths": {
+        "/alerts": {
+            "get": {
+                "description": "Lists all alerts for the current tenant",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "alerts"
+                ],
+                "summary": "List alerts",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_minisource_log_internal_models.LogAlert"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Creates a new log alert rule",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "alerts"
+                ],
+                "summary": "Create alert",
+                "parameters": [
+                    {
+                        "description": "Log Alert",
+                        "name": "alert",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_minisource_log_internal_models.LogAlert"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_minisource_log_internal_models.LogAlert"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/alerts/{id}": {
+            "get": {
+                "description": "Retrieves an alert by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "alerts"
+                ],
+                "summary": "Get alert",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Alert ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_minisource_log_internal_models.LogAlert"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Updates an existing alert",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "alerts"
+                ],
+                "summary": "Update alert",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Alert ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Log Alert",
+                        "name": "alert",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_minisource_log_internal_models.LogAlert"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_minisource_log_internal_models.LogAlert"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes an alert",
+                "tags": [
+                    "alerts"
+                ],
+                "summary": "Delete alert",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Alert ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/alerts/{id}/disable": {
+            "post": {
+                "description": "Disables an alert",
+                "tags": [
+                    "alerts"
+                ],
+                "summary": "Disable alert",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Alert ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/alerts/{id}/enable": {
+            "post": {
+                "description": "Enables an alert",
+                "tags": [
+                    "alerts"
+                ],
+                "summary": "Enable alert",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Alert ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "description": "Returns service health status",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "Health check",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/live": {
+            "get": {
+                "description": "Returns service liveness status",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "Liveness check",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/logs": {
+            "get": {
+                "description": "List logs with optional filters",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "logs"
+                ],
+                "summary": "List logs",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by service",
+                        "name": "service",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by log level",
+                        "name": "level",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_minisource_log_internal_models.LogQueryResult"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Ingests a single log entry",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "logs"
+                ],
+                "summary": "Ingest a single log entry",
+                "parameters": [
+                    {
+                        "description": "Log Entry",
+                        "name": "log",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_minisource_log_internal_models.LogEntry"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_minisource_log_internal_models.LogEntry"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/logs/aggregate": {
+            "post": {
+                "description": "Retrieves time-bucketed log aggregations",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "logs"
+                ],
+                "summary": "Aggregate logs",
+                "parameters": [
+                    {
+                        "description": "Log Filter",
+                        "name": "filter",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_minisource_log_internal_models.LogFilter"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Time interval (minute, hour, day)",
+                        "name": "interval",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_minisource_log_internal_models.LogAggregation"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/logs/batch": {
+            "post": {
+                "description": "Ingests a batch of log entries",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "logs"
+                ],
+                "summary": "Ingest multiple log entries",
+                "parameters": [
+                    {
+                        "description": "Log Batch",
+                        "name": "logs",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_minisource_log_internal_models.LogBatch"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/logs/query": {
+            "post": {
+                "description": "Search and filter logs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "logs"
+                ],
+                "summary": "Query logs",
+                "parameters": [
+                    {
+                        "description": "Log Filter",
+                        "name": "filter",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_minisource_log_internal_models.LogFilter"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_minisource_log_internal_models.LogQueryResult"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/logs/request/{request_id}": {
+            "get": {
+                "description": "Retrieves all logs for a request",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "logs"
+                ],
+                "summary": "Get logs by request ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Request ID",
+                        "name": "request_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_minisource_log_internal_models.LogEntry"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/logs/services": {
+            "get": {
+                "description": "Retrieves list of services that have logged entries",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "logs"
+                ],
+                "summary": "Get service names",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/logs/stats": {
+            "get": {
+                "description": "Retrieves aggregated log statistics",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "logs"
+                ],
+                "summary": "Get log statistics",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Start time (RFC3339)",
+                        "name": "start",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "End time (RFC3339)",
+                        "name": "end",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_minisource_log_internal_models.LogStats"
+                        }
+                    }
+                }
+            }
+        },
+        "/logs/storage": {
+            "get": {
+                "description": "Retrieves storage usage statistics",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "logs"
+                ],
+                "summary": "Get storage usage",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/logs/stream": {
+            "get": {
+                "description": "Stream logs in real-time using Server-Sent Events",
+                "produces": [
+                    "text/event-stream"
+                ],
+                "tags": [
+                    "logs"
+                ],
+                "summary": "Stream logs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by service",
+                        "name": "service",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by log level",
+                        "name": "level",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "SSE stream",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/logs/trace/{trace_id}": {
+            "get": {
+                "description": "Retrieves all logs for a distributed trace",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "logs"
+                ],
+                "summary": "Get logs by trace ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Trace ID",
+                        "name": "trace_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_minisource_log_internal_models.LogEntry"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/logs/{id}": {
+            "get": {
+                "description": "Retrieves a single log entry by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "logs"
+                ],
+                "summary": "Get log by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Log ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_minisource_log_internal_models.LogEntry"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/ready": {
+            "get": {
+                "description": "Returns service readiness status",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "Readiness check",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/retention": {
+            "get": {
+                "description": "Lists all retention policies",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "retention"
+                ],
+                "summary": "List retention policies",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_minisource_log_internal_models.LogRetention"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Creates a new retention policy for a tenant",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "retention"
+                ],
+                "summary": "Create retention policy",
+                "parameters": [
+                    {
+                        "description": "Retention Policy",
+                        "name": "policy",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_minisource_log_internal_models.LogRetention"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_minisource_log_internal_models.LogRetention"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/retention/tenant/{tenant_id}": {
+            "get": {
+                "description": "Retrieves retention policy for a tenant",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "retention"
+                ],
+                "summary": "Get retention policy",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tenant ID",
+                        "name": "tenant_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_minisource_log_internal_models.LogRetention"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/retention/{id}": {
+            "put": {
+                "description": "Updates an existing retention policy",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "retention"
+                ],
+                "summary": "Update retention policy",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Policy ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Retention Policy",
+                        "name": "policy",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_minisource_log_internal_models.LogRetention"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_minisource_log_internal_models.LogRetention"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes a retention policy",
+                "tags": [
+                    "retention"
+                ],
+                "summary": "Delete retention policy",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Policy ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "github_com_minisource_log_internal_models.LogAggregation": {
+            "type": "object",
+            "properties": {
+                "bucket": {
+                    "type": "string"
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "level_counts": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                }
+            }
+        },
+        "github_com_minisource_log_internal_models.LogAlert": {
+            "type": "object",
+            "properties": {
+                "channels": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "filter": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "last_triggered": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "severity": {
+                    "type": "string"
+                },
+                "tenant_id": {
+                    "type": "string"
+                },
+                "threshold": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "window_mins": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_minisource_log_internal_models.LogBatch": {
+            "type": "object",
+            "properties": {
+                "entries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_minisource_log_internal_models.LogEntry"
+                    }
+                }
+            }
+        },
+        "github_com_minisource_log_internal_models.LogEntry": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "environment": {
+                    "type": "string"
+                },
+                "host": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "level": {
+                    "$ref": "#/definitions/github_com_minisource_log_internal_models.LogLevel"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "metadata": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "request_id": {
+                    "type": "string"
+                },
+                "service_name": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "span_id": {
+                    "type": "string"
+                },
+                "tenant_id": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_minisource_log_internal_models.LogFilter": {
+            "type": "object",
+            "properties": {
+                "end_time": {
+                    "type": "string"
+                },
+                "environment": {
+                    "type": "string"
+                },
+                "level": {
+                    "$ref": "#/definitions/github_com_minisource_log_internal_models.LogLevel"
+                },
+                "min_level": {
+                    "$ref": "#/definitions/github_com_minisource_log_internal_models.LogLevel"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "request_id": {
+                    "type": "string"
+                },
+                "search": {
+                    "type": "string"
+                },
+                "service_name": {
+                    "type": "string"
+                },
+                "start_time": {
+                    "type": "string"
+                },
+                "tenant_id": {
+                    "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_minisource_log_internal_models.LogLevel": {
+            "type": "string",
+            "enum": [
+                "DEBUG",
+                "INFO",
+                "WARN",
+                "ERROR",
+                "FATAL"
+            ],
+            "x-enum-varnames": [
+                "LogLevelDebug",
+                "LogLevelInfo",
+                "LogLevelWarn",
+                "LogLevelError",
+                "LogLevelFatal"
+            ]
+        },
+        "github_com_minisource_log_internal_models.LogQueryResult": {
+            "type": "object",
+            "properties": {
+                "entries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_minisource_log_internal_models.LogEntry"
+                    }
+                },
+                "has_more": {
+                    "type": "boolean"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total_count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_minisource_log_internal_models.LogRetention": {
+            "type": "object",
+            "properties": {
+                "archive_enabled": {
+                    "type": "boolean"
+                },
+                "archive_path": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "max_size_gb": {
+                    "type": "integer"
+                },
+                "retention_days": {
+                    "type": "integer"
+                },
+                "tenant_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_minisource_log_internal_models.LogStats": {
+            "type": "object",
+            "properties": {
+                "level_counts": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
+                "service_counts": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
+                "time_range": {
+                    "$ref": "#/definitions/github_com_minisource_log_internal_models.TimeRange"
+                },
+                "total_count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_minisource_log_internal_models.TimeRange": {
+            "type": "object",
+            "properties": {
+                "end": {
+                    "type": "string"
+                },
+                "start": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_handler.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

@@ -1,0 +1,792 @@
+basePath: /api/v1
+definitions:
+  github_com_minisource_log_internal_models.LogAggregation:
+    properties:
+      bucket:
+        type: string
+      count:
+        type: integer
+      level_counts:
+        additionalProperties:
+          format: int64
+          type: integer
+        type: object
+    type: object
+  github_com_minisource_log_internal_models.LogAlert:
+    properties:
+      channels:
+        items:
+          type: integer
+        type: array
+      created_at:
+        type: string
+      description:
+        type: string
+      enabled:
+        type: boolean
+      filter:
+        items:
+          type: integer
+        type: array
+      id:
+        type: string
+      last_triggered:
+        type: string
+      name:
+        type: string
+      severity:
+        type: string
+      tenant_id:
+        type: string
+      threshold:
+        type: integer
+      updated_at:
+        type: string
+      window_mins:
+        type: integer
+    type: object
+  github_com_minisource_log_internal_models.LogBatch:
+    properties:
+      entries:
+        items:
+          $ref: '#/definitions/github_com_minisource_log_internal_models.LogEntry'
+        type: array
+    type: object
+  github_com_minisource_log_internal_models.LogEntry:
+    properties:
+      created_at:
+        type: string
+      environment:
+        type: string
+      host:
+        type: string
+      id:
+        type: string
+      level:
+        $ref: '#/definitions/github_com_minisource_log_internal_models.LogLevel'
+      message:
+        type: string
+      metadata:
+        items:
+          type: integer
+        type: array
+      request_id:
+        type: string
+      service_name:
+        type: string
+      source:
+        type: string
+      span_id:
+        type: string
+      tenant_id:
+        type: string
+      timestamp:
+        type: string
+      trace_id:
+        type: string
+      user_id:
+        type: string
+    type: object
+  github_com_minisource_log_internal_models.LogFilter:
+    properties:
+      end_time:
+        type: string
+      environment:
+        type: string
+      level:
+        $ref: '#/definitions/github_com_minisource_log_internal_models.LogLevel'
+      min_level:
+        $ref: '#/definitions/github_com_minisource_log_internal_models.LogLevel'
+      page:
+        type: integer
+      page_size:
+        type: integer
+      request_id:
+        type: string
+      search:
+        type: string
+      service_name:
+        type: string
+      start_time:
+        type: string
+      tenant_id:
+        type: string
+      trace_id:
+        type: string
+      user_id:
+        type: string
+    type: object
+  github_com_minisource_log_internal_models.LogLevel:
+    enum:
+    - DEBUG
+    - INFO
+    - WARN
+    - ERROR
+    - FATAL
+    type: string
+    x-enum-varnames:
+    - LogLevelDebug
+    - LogLevelInfo
+    - LogLevelWarn
+    - LogLevelError
+    - LogLevelFatal
+  github_com_minisource_log_internal_models.LogQueryResult:
+    properties:
+      entries:
+        items:
+          $ref: '#/definitions/github_com_minisource_log_internal_models.LogEntry'
+        type: array
+      has_more:
+        type: boolean
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total_count:
+        type: integer
+    type: object
+  github_com_minisource_log_internal_models.LogRetention:
+    properties:
+      archive_enabled:
+        type: boolean
+      archive_path:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      max_size_gb:
+        type: integer
+      retention_days:
+        type: integer
+      tenant_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  github_com_minisource_log_internal_models.LogStats:
+    properties:
+      level_counts:
+        additionalProperties:
+          format: int64
+          type: integer
+        type: object
+      service_counts:
+        additionalProperties:
+          format: int64
+          type: integer
+        type: object
+      time_range:
+        $ref: '#/definitions/github_com_minisource_log_internal_models.TimeRange'
+      total_count:
+        type: integer
+    type: object
+  github_com_minisource_log_internal_models.TimeRange:
+    properties:
+      end:
+        type: string
+      start:
+        type: string
+    type: object
+  internal_handler.ErrorResponse:
+    properties:
+      error:
+        type: string
+      message:
+        type: string
+    type: object
+host: localhost:5002
+info:
+  contact: {}
+  description: Centralized logging service for Minisource
+  title: Log Service API
+  version: "1.0"
+paths:
+  /alerts:
+    get:
+      description: Lists all alerts for the current tenant
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_minisource_log_internal_models.LogAlert'
+            type: array
+      summary: List alerts
+      tags:
+      - alerts
+    post:
+      consumes:
+      - application/json
+      description: Creates a new log alert rule
+      parameters:
+      - description: Log Alert
+        in: body
+        name: alert
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_minisource_log_internal_models.LogAlert'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_minisource_log_internal_models.LogAlert'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handler.ErrorResponse'
+      summary: Create alert
+      tags:
+      - alerts
+  /alerts/{id}:
+    delete:
+      description: Deletes an alert
+      parameters:
+      - description: Alert ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handler.ErrorResponse'
+      summary: Delete alert
+      tags:
+      - alerts
+    get:
+      description: Retrieves an alert by ID
+      parameters:
+      - description: Alert ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_minisource_log_internal_models.LogAlert'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_handler.ErrorResponse'
+      summary: Get alert
+      tags:
+      - alerts
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing alert
+      parameters:
+      - description: Alert ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Log Alert
+        in: body
+        name: alert
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_minisource_log_internal_models.LogAlert'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_minisource_log_internal_models.LogAlert'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handler.ErrorResponse'
+      summary: Update alert
+      tags:
+      - alerts
+  /alerts/{id}/disable:
+    post:
+      description: Disables an alert
+      parameters:
+      - description: Alert ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      summary: Disable alert
+      tags:
+      - alerts
+  /alerts/{id}/enable:
+    post:
+      description: Enables an alert
+      parameters:
+      - description: Alert ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      summary: Enable alert
+      tags:
+      - alerts
+  /health:
+    get:
+      description: Returns service health status
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Health check
+      tags:
+      - health
+  /live:
+    get:
+      description: Returns service liveness status
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Liveness check
+      tags:
+      - health
+  /logs:
+    get:
+      description: List logs with optional filters
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - description: Filter by service
+        in: query
+        name: service
+        type: string
+      - description: Filter by log level
+        in: query
+        name: level
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_minisource_log_internal_models.LogQueryResult'
+      summary: List logs
+      tags:
+      - logs
+    post:
+      consumes:
+      - application/json
+      description: Ingests a single log entry
+      parameters:
+      - description: Log Entry
+        in: body
+        name: log
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_minisource_log_internal_models.LogEntry'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_minisource_log_internal_models.LogEntry'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handler.ErrorResponse'
+      summary: Ingest a single log entry
+      tags:
+      - logs
+  /logs/{id}:
+    get:
+      description: Retrieves a single log entry by ID
+      parameters:
+      - description: Log ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_minisource_log_internal_models.LogEntry'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_handler.ErrorResponse'
+      summary: Get log by ID
+      tags:
+      - logs
+  /logs/aggregate:
+    post:
+      consumes:
+      - application/json
+      description: Retrieves time-bucketed log aggregations
+      parameters:
+      - description: Log Filter
+        in: body
+        name: filter
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_minisource_log_internal_models.LogFilter'
+      - description: Time interval (minute, hour, day)
+        in: query
+        name: interval
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_minisource_log_internal_models.LogAggregation'
+            type: array
+      summary: Aggregate logs
+      tags:
+      - logs
+  /logs/batch:
+    post:
+      consumes:
+      - application/json
+      description: Ingests a batch of log entries
+      parameters:
+      - description: Log Batch
+        in: body
+        name: logs
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_minisource_log_internal_models.LogBatch'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: integer
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handler.ErrorResponse'
+      summary: Ingest multiple log entries
+      tags:
+      - logs
+  /logs/query:
+    post:
+      consumes:
+      - application/json
+      description: Search and filter logs
+      parameters:
+      - description: Log Filter
+        in: body
+        name: filter
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_minisource_log_internal_models.LogFilter'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_minisource_log_internal_models.LogQueryResult'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handler.ErrorResponse'
+      summary: Query logs
+      tags:
+      - logs
+  /logs/request/{request_id}:
+    get:
+      description: Retrieves all logs for a request
+      parameters:
+      - description: Request ID
+        in: path
+        name: request_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_minisource_log_internal_models.LogEntry'
+            type: array
+      summary: Get logs by request ID
+      tags:
+      - logs
+  /logs/services:
+    get:
+      description: Retrieves list of services that have logged entries
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+      summary: Get service names
+      tags:
+      - logs
+  /logs/stats:
+    get:
+      description: Retrieves aggregated log statistics
+      parameters:
+      - description: Start time (RFC3339)
+        in: query
+        name: start
+        type: string
+      - description: End time (RFC3339)
+        in: query
+        name: end
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_minisource_log_internal_models.LogStats'
+      summary: Get log statistics
+      tags:
+      - logs
+  /logs/storage:
+    get:
+      description: Retrieves storage usage statistics
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get storage usage
+      tags:
+      - logs
+  /logs/stream:
+    get:
+      description: Stream logs in real-time using Server-Sent Events
+      parameters:
+      - description: Filter by service
+        in: query
+        name: service
+        type: string
+      - description: Filter by log level
+        in: query
+        name: level
+        type: string
+      produces:
+      - text/event-stream
+      responses:
+        "200":
+          description: SSE stream
+          schema:
+            type: string
+      summary: Stream logs
+      tags:
+      - logs
+  /logs/trace/{trace_id}:
+    get:
+      description: Retrieves all logs for a distributed trace
+      parameters:
+      - description: Trace ID
+        in: path
+        name: trace_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_minisource_log_internal_models.LogEntry'
+            type: array
+      summary: Get logs by trace ID
+      tags:
+      - logs
+  /ready:
+    get:
+      description: Returns service readiness status
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "503":
+          description: Service Unavailable
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Readiness check
+      tags:
+      - health
+  /retention:
+    get:
+      description: Lists all retention policies
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_minisource_log_internal_models.LogRetention'
+            type: array
+      summary: List retention policies
+      tags:
+      - retention
+    post:
+      consumes:
+      - application/json
+      description: Creates a new retention policy for a tenant
+      parameters:
+      - description: Retention Policy
+        in: body
+        name: policy
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_minisource_log_internal_models.LogRetention'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_minisource_log_internal_models.LogRetention'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handler.ErrorResponse'
+      summary: Create retention policy
+      tags:
+      - retention
+  /retention/{id}:
+    delete:
+      description: Deletes a retention policy
+      parameters:
+      - description: Policy ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handler.ErrorResponse'
+      summary: Delete retention policy
+      tags:
+      - retention
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing retention policy
+      parameters:
+      - description: Policy ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Retention Policy
+        in: body
+        name: policy
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_minisource_log_internal_models.LogRetention'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_minisource_log_internal_models.LogRetention'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handler.ErrorResponse'
+      summary: Update retention policy
+      tags:
+      - retention
+  /retention/tenant/{tenant_id}:
+    get:
+      description: Retrieves retention policy for a tenant
+      parameters:
+      - description: Tenant ID
+        in: path
+        name: tenant_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_minisource_log_internal_models.LogRetention'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_handler.ErrorResponse'
+      summary: Get retention policy
+      tags:
+      - retention
+schemes:
+- http
+- https
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

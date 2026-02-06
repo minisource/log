@@ -78,7 +78,8 @@ migrate-create:
 
 # Swagger docs
 swagger:
-	swag init -g cmd/main.go -o docs
+	@echo "Generating Swagger documentation..."
+	@swag init -g cmd/main.go -o docs --parseDependency --parseInternal
 
 # All-in-one
 all: deps lint test build

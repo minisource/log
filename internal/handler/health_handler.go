@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/minisource/go-common/response"
 )
 
 // HealthHandler handles health check requests
@@ -20,7 +21,7 @@ func NewHealthHandler() *HealthHandler {
 // @Success 200 {object} map[string]string
 // @Router /health [get]
 func (h *HealthHandler) Health(c *fiber.Ctx) error {
-	return c.JSON(fiber.Map{
+	return response.OK(c, fiber.Map{
 		"status":  "healthy",
 		"service": "log-service",
 	})
@@ -36,7 +37,7 @@ func (h *HealthHandler) Health(c *fiber.Ctx) error {
 // @Router /ready [get]
 func (h *HealthHandler) Ready(c *fiber.Ctx) error {
 	// Add actual readiness checks here (database, redis, etc.)
-	return c.JSON(fiber.Map{
+	return response.OK(c, fiber.Map{
 		"status": "ready",
 	})
 }
@@ -49,7 +50,7 @@ func (h *HealthHandler) Ready(c *fiber.Ctx) error {
 // @Success 200 {object} map[string]string
 // @Router /live [get]
 func (h *HealthHandler) Live(c *fiber.Ctx) error {
-	return c.JSON(fiber.Map{
+	return response.OK(c, fiber.Map{
 		"status": "alive",
 	})
 }

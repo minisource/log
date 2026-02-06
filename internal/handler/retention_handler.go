@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"github.com/minisource/go-common/response"
 	"github.com/minisource/log/internal/models"
 	"github.com/minisource/log/internal/service"
 )
@@ -25,25 +26,19 @@ func NewRetentionHandler(service *service.RetentionService) *RetentionHandler {
 // @Produce json
 // @Param policy body models.LogRetention true "Retention Policy"
 // @Success 201 {object} models.LogRetention
-// @Failure 400 {object} ErrorResponse
+// @Failure 400 {object} response.Response
 // @Router /retention [post]
 func (h *RetentionHandler) CreatePolicy(c *fiber.Ctx) error {
 	var policy models.LogRetention
 	if err := c.BodyParser(&policy); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
-			Error:   "invalid_request",
-			Message: err.Error(),
-		})
+		return response.BadRequest(c, "invalid_request", err.Error())
 	}
 
 	if err := h.service.CreatePolicy(c.Context(), &policy); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
-			Error:   "creation_failed",
-			Message: err.Error(),
-		})
+		return response.InternalError(c, err.Error())
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(policy)
+	return response.Created(c, policy)
 }
 
 // UpdatePolicy updates a retention policy
@@ -55,34 +50,25 @@ func (h *RetentionHandler) CreatePolicy(c *fiber.Ctx) error {
 // @Param id path string true "Policy ID"
 // @Param policy body models.LogRetention true "Retention Policy"
 // @Success 200 {object} models.LogRetention
-// @Failure 400 {object} ErrorResponse
+// @Failure 400 {object} response.Response
 // @Router /retention/{id} [put]
 func (h *RetentionHandler) UpdatePolicy(c *fiber.Ctx) error {
 	id, err := uuid.Parse(c.Params("id"))
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
-			Error:   "invalid_id",
-			Message: "Invalid policy ID format",
-		})
+		return response.BadRequest(c, "invalid_id", "Invalid policy ID format")
 	}
 
 	var policy models.LogRetention
 	if err := c.BodyParser(&policy); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
-			Error:   "invalid_request",
-			Message: err.Error(),
-		})
+		return response.BadRequest(c, "invalid_request", err.Error())
 	}
 
 	policy.ID = id
 	if err := h.service.UpdatePolicy(c.Context(), &policy); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
-			Error:   "update_failed",
-			Message: err.Error(),
-		})
+		return response.InternalError(c, err.Error())
 	}
 
-	return c.JSON(policy)
+	return response.OK(c, policy)
 }
 
 // GetPolicy retrieves a retention policy
@@ -92,26 +78,20 @@ func (h *RetentionHandler) UpdatePolicy(c *fiber.Ctx) error {
 // @Produce json
 // @Param tenant_id path string true "Tenant ID"
 // @Success 200 {object} models.LogRetention
-// @Failure 404 {object} ErrorResponse
+// @Failure 404 {object} response.Response
 // @Router /retention/tenant/{tenant_id} [get]
 func (h *RetentionHandler) GetPolicy(c *fiber.Ctx) error {
 	tenantID, err := uuid.Parse(c.Params("tenant_id"))
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
-			Error:   "invalid_tenant_id",
-			Message: "Invalid tenant ID format",
-		})
+		return response.BadRequest(c, "invalid_tenant_id", "Invalid tenant ID format")
 	}
 
 	policy, err := h.service.GetPolicy(c.Context(), tenantID)
 	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(ErrorResponse{
-			Error:   "not_found",
-			Message: "Retention policy not found",
-		})
+		return response.NotFound(c, "Retention policy not found")
 	}
 
-	return c.JSON(policy)
+	return response.OK(c, policy)
 }
 
 // ListPolicies lists all retention policies
@@ -124,13 +104,10 @@ func (h *RetentionHandler) GetPolicy(c *fiber.Ctx) error {
 func (h *RetentionHandler) ListPolicies(c *fiber.Ctx) error {
 	policies, err := h.service.GetAllPolicies(c.Context())
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
-			Error:   "query_failed",
-			Message: err.Error(),
-		})
+		return response.InternalError(c, err.Error())
 	}
 
-	return c.JSON(policies)
+	return response.OK(c, policies)
 }
 
 // DeletePolicy deletes a retention policy
@@ -139,23 +116,17 @@ func (h *RetentionHandler) ListPolicies(c *fiber.Ctx) error {
 // @Tags retention
 // @Param id path string true "Policy ID"
 // @Success 204
-// @Failure 400 {object} ErrorResponse
+// @Failure 400 {object} response.Response
 // @Router /retention/{id} [delete]
 func (h *RetentionHandler) DeletePolicy(c *fiber.Ctx) error {
 	id, err := uuid.Parse(c.Params("id"))
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
-			Error:   "invalid_id",
-			Message: "Invalid policy ID format",
-		})
+		return response.BadRequest(c, "invalid_id", "Invalid policy ID format")
 	}
 
 	if err := h.service.DeletePolicy(c.Context(), id); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
-			Error:   "deletion_failed",
-			Message: err.Error(),
-		})
+		return response.InternalError(c, err.Error())
 	}
 
-	return c.SendStatus(fiber.StatusNoContent)
+	return response.NoContent(c)
 }

@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"github.com/minisource/go-common/response"
 	"github.com/minisource/log/internal/models"
 	"github.com/minisource/log/internal/service"
 )
@@ -28,15 +29,12 @@ func NewLogHandler(logService *service.LogService) *LogHandler {
 // @Produce json
 // @Param log body models.LogEntry true "Log Entry"
 // @Success 201 {object} models.LogEntry
-// @Failure 400 {object} ErrorResponse
+// @Failure 400 {object} response.Response
 // @Router /logs [post]
 func (h *LogHandler) IngestSingle(c *fiber.Ctx) error {
 	var entry models.LogEntry
 	if err := c.BodyParser(&entry); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
-			Error:   "invalid_request",
-			Message: err.Error(),
-		})
+		return response.BadRequest(c, "invalid_request", err.Error())
 	}
 
 	// Set tenant from context if available
@@ -47,13 +45,10 @@ func (h *LogHandler) IngestSingle(c *fiber.Ctx) error {
 	}
 
 	if err := h.logService.IngestSingle(c.Context(), &entry); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
-			Error:   "ingestion_failed",
-			Message: err.Error(),
-		})
+		return response.InternalError(c, err.Error())
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(entry)
+	return response.Created(c, entry)
 }
 
 // IngestBatch handles batch log ingestion
@@ -64,15 +59,12 @@ func (h *LogHandler) IngestSingle(c *fiber.Ctx) error {
 // @Produce json
 // @Param logs body models.LogBatch true "Log Batch"
 // @Success 201 {object} map[string]int
-// @Failure 400 {object} ErrorResponse
+// @Failure 400 {object} response.Response
 // @Router /logs/batch [post]
 func (h *LogHandler) IngestBatch(c *fiber.Ctx) error {
 	var batch models.LogBatch
 	if err := c.BodyParser(&batch); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
-			Error:   "invalid_request",
-			Message: err.Error(),
-		})
+		return response.BadRequest(c, "invalid_request", err.Error())
 	}
 
 	// Set tenant from context if available
@@ -87,13 +79,10 @@ func (h *LogHandler) IngestBatch(c *fiber.Ctx) error {
 	}
 
 	if err := h.logService.IngestBatch(c.Context(), &batch); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
-			Error:   "ingestion_failed",
-			Message: err.Error(),
-		})
+		return response.InternalError(c, err.Error())
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+	return response.Created(c, fiber.Map{
 		"count": len(batch.Entries),
 	})
 }
@@ -106,15 +95,12 @@ func (h *LogHandler) IngestBatch(c *fiber.Ctx) error {
 // @Produce json
 // @Param filter body models.LogFilter true "Log Filter"
 // @Success 200 {object} models.LogQueryResult
-// @Failure 400 {object} ErrorResponse
+// @Failure 400 {object} response.Response
 // @Router /logs/query [post]
 func (h *LogHandler) Query(c *fiber.Ctx) error {
 	var filter models.LogFilter
 	if err := c.BodyParser(&filter); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
-			Error:   "invalid_request",
-			Message: err.Error(),
-		})
+		return response.BadRequest(c, "invalid_request", err.Error())
 	}
 
 	// Apply tenant from context
@@ -126,13 +112,10 @@ func (h *LogHandler) Query(c *fiber.Ctx) error {
 
 	result, err := h.logService.Query(c.Context(), filter)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
-			Error:   "query_failed",
-			Message: err.Error(),
-		})
+		return response.InternalError(c, err.Error())
 	}
 
-	return c.JSON(result)
+	return response.OK(c, result)
 }
 
 // GetByID retrieves a single log entry
@@ -142,26 +125,20 @@ func (h *LogHandler) Query(c *fiber.Ctx) error {
 // @Produce json
 // @Param id path string true "Log ID"
 // @Success 200 {object} models.LogEntry
-// @Failure 404 {object} ErrorResponse
+// @Failure 404 {object} response.Response
 // @Router /logs/{id} [get]
 func (h *LogHandler) GetByID(c *fiber.Ctx) error {
 	id, err := uuid.Parse(c.Params("id"))
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
-			Error:   "invalid_id",
-			Message: "Invalid log ID format",
-		})
+		return response.BadRequest(c, "invalid_id", "Invalid log ID format")
 	}
 
 	entry, err := h.logService.GetByID(c.Context(), id)
 	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(ErrorResponse{
-			Error:   "not_found",
-			Message: "Log entry not found",
-		})
+		return response.NotFound(c, "Log entry not found")
 	}
 
-	return c.JSON(entry)
+	return response.OK(c, entry)
 }
 
 // GetByTrace retrieves logs by trace ID
@@ -175,21 +152,15 @@ func (h *LogHandler) GetByID(c *fiber.Ctx) error {
 func (h *LogHandler) GetByTrace(c *fiber.Ctx) error {
 	traceID := c.Params("trace_id")
 	if traceID == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
-			Error:   "invalid_trace_id",
-			Message: "Trace ID is required",
-		})
+		return response.BadRequest(c, "invalid_trace_id", "Trace ID is required")
 	}
 
 	entries, err := h.logService.GetByTraceID(c.Context(), traceID)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
-			Error:   "query_failed",
-			Message: err.Error(),
-		})
+		return response.InternalError(c, err.Error())
 	}
 
-	return c.JSON(entries)
+	return response.OK(c, entries)
 }
 
 // GetByRequest retrieves logs by request ID
@@ -203,21 +174,15 @@ func (h *LogHandler) GetByTrace(c *fiber.Ctx) error {
 func (h *LogHandler) GetByRequest(c *fiber.Ctx) error {
 	requestID := c.Params("request_id")
 	if requestID == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
-			Error:   "invalid_request_id",
-			Message: "Request ID is required",
-		})
+		return response.BadRequest(c, "invalid_request_id", "Request ID is required")
 	}
 
 	entries, err := h.logService.GetByRequestID(c.Context(), requestID)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
-			Error:   "query_failed",
-			Message: err.Error(),
-		})
+		return response.InternalError(c, err.Error())
 	}
 
-	return c.JSON(entries)
+	return response.OK(c, entries)
 }
 
 // GetStats retrieves log statistics
@@ -253,13 +218,10 @@ func (h *LogHandler) GetStats(c *fiber.Ctx) error {
 
 	stats, err := h.logService.GetStats(c.Context(), tenantID, startTime, endTime)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
-			Error:   "stats_failed",
-			Message: err.Error(),
-		})
+		return response.InternalError(c, err.Error())
 	}
 
-	return c.JSON(stats)
+	return response.OK(c, stats)
 }
 
 // Aggregate retrieves time-bucketed aggregations
@@ -275,23 +237,17 @@ func (h *LogHandler) GetStats(c *fiber.Ctx) error {
 func (h *LogHandler) Aggregate(c *fiber.Ctx) error {
 	var filter models.LogFilter
 	if err := c.BodyParser(&filter); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
-			Error:   "invalid_request",
-			Message: err.Error(),
-		})
+		return response.BadRequest(c, "invalid_request", err.Error())
 	}
 
 	interval := c.Query("interval", "hour")
 
 	aggregations, err := h.logService.Aggregate(c.Context(), filter, interval)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
-			Error:   "aggregation_failed",
-			Message: err.Error(),
-		})
+		return response.InternalError(c, err.Error())
 	}
 
-	return c.JSON(aggregations)
+	return response.OK(c, aggregations)
 }
 
 // GetServices retrieves available service names
@@ -311,13 +267,10 @@ func (h *LogHandler) GetServices(c *fiber.Ctx) error {
 
 	services, err := h.logService.GetServices(c.Context(), tenantID)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
-			Error:   "query_failed",
-			Message: err.Error(),
-		})
+		return response.InternalError(c, err.Error())
 	}
 
-	return c.JSON(services)
+	return response.OK(c, services)
 }
 
 // GetStorage retrieves storage usage
@@ -337,13 +290,10 @@ func (h *LogHandler) GetStorage(c *fiber.Ctx) error {
 
 	size, err := h.logService.GetStorageSize(c.Context(), tenantID)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
-			Error:   "query_failed",
-			Message: err.Error(),
-		})
+		return response.InternalError(c, err.Error())
 	}
 
-	return c.JSON(fiber.Map{
+	return response.OK(c, fiber.Map{
 		"size_bytes": size,
 		"size_mb":    float64(size) / (1024 * 1024),
 		"size_gb":    float64(size) / (1024 * 1024 * 1024),
@@ -435,11 +385,8 @@ func (h *LogHandler) List(c *fiber.Ctx) error {
 
 	result, err := h.logService.Query(c.Context(), filter)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
-			Error:   "query_failed",
-			Message: err.Error(),
-		})
+		return response.InternalError(c, err.Error())
 	}
 
-	return c.JSON(result)
+	return response.OK(c, result)
 }
